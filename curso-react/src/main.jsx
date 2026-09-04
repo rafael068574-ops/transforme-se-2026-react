@@ -18,7 +18,9 @@ install({
       colors: {
         primary: '#5782AD',
         secondary: '#B3D9FF',
-      },
+        red: '#fd0000' ,
+        green: '#3be706' ,
+      }
     },
   },
   
