@@ -20,6 +20,9 @@ install({
         secondary: '#B3D9FF',
         red: '#fd0000' ,
         green: '#3be706' ,
+        yellow: '#ffd900' ,
+        blue: '#003cff' ,
+        gray: '#a2a6b3' 
       }
     },
   },

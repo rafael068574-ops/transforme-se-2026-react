@@ -14,6 +14,16 @@ function Painel() {
         if(usersTemp) setUsers (usersTemp)
     },[])
     
+    function deleteUser(index){
+        const newUsers = users.filter((u,i) => {return i != index})
+        setUsers(newUsers)
+        localStorage.setItem('users', JSON.stringify(newUsers));
+    
+
+}
+
+
+
     function updateUser(indice){
         setModal(true)
         setUser(users[indice] )
@@ -38,6 +48,7 @@ function Painel() {
         setModal(false)
 
 
+
     }
     return (
  <>
@@ -56,19 +67,22 @@ function Painel() {
             { isEdit ? (
             <form className="flex flex-col">
 
-                Nome: <input value={user.nome} onChange={ (e) => setUser({...user, nome: e.target.value }) } type="text" placeholder="Digite seu nome completo" />
-                Email: <input value={user.email} onChange={ (e) => setUser({...user, email: e.target.value }) } type="email" placeholder="Digite o seu melhor email" />
-                Senha: <input value={user.password} onChange={ (e) => setUser({...user, password: e.target.value }) } type="password" placeholder="Letra maiuscula e números" />
-                Data de Nascimento: <input value={user.date} onChange={ (e) => setUser({...user, date: e.target.value }) } type="date"/>
-                {index != -1 && (<a onClick={()=> setIsEdit(false)} className="mr-3 py-2 px-2 hover:bg-dark hover:text-primary text-black rounded ml-auto py-2 shadow 3px bottom-0 cursor-pointer mx-auto bg-red-300">Cancelar</a>)}
-                <a onClick={hanleRegister} className="mr-3 py-2 px-2 hover:bg-dark hover:text-primary rounded ml-auto py-2 shadow 3px bottom-0 cursor-pointer mx-auto bg-dark">Salvar</a>
+                Nome: <input class="text-black" value={user.nome} onChange={ (e) => setUser({...user, nome: e.target.value }) } type="text" placeholder="Digite seu nome completo" />
+                Email: <input class="text-black" value={user.email} onChange={ (e) => setUser({...user, email: e.target.value }) } type="email" placeholder="Digite o seu melhor email" />
+                Senha: <input class="text-black" value={user.password} onChange={ (e) => setUser({...user, password: e.target.value }) } type="password" placeholder="Letra maiuscula e números" />
+                Data de Nascimento: <input class="text-black" value={user.date} onChange={ (e) => setUser({...user, date: e.target.value }) } type="date"/>
+                <br />
+                {index != -1 && (<a onClick={()=> setIsEdit(false)} className="w-full hover:bg-dark hover:text-primary text-black rounded ml-auto py-2 shadow 3px bottom-0 cursor-pointer mx-auto bg-red-500">Cancelar</a>)}
+                <br />
+                <a onClick={hanleRegister} className="w-full bg-blue-500 hover:bg-dark text-black hover:text-primary rounded ml-auto py-2 shadow 3px bottom-0 cursor-pointer mx-auto bg-dark">Salvar</a>
             </form>): //else 
             (
                 <>
                     <p>Nome: {user.nome}</p>
                     <p>Email: {user.email}</p>
                     <p>Date: {user.date}</p>
-                    <a onClick={()=> setIsEdit(true)} className="mr-3 py-2 px-2 hover:bg-dark hover:text-primary text-black rounded ml-auto py-2 shadow 3px bottom-0 cursor-pointer mx-auto bg-dark bg-yellow">Editar</a>
+                    <br />
+                    <a onClick={()=> setIsEdit(true)} className="w-full hover:bg-dark hover:text-primary text-black rounded ml-auto py-2 shadow 3px bottom-0 cursor-pointer mx-auto bg-dark bg-yellow">Editar</a>
                 </>
             )
             }
@@ -106,6 +120,7 @@ function Painel() {
                         text-white
                         rounded-full
                         bg-red-500'
+                        onClick={()=> deleteUser(i)}
                         >X</a>
                     </td>
                 </tr>
