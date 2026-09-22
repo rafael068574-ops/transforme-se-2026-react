@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import {Link} from 'react-router';
+import { supabase } from '../../utils/supabase';
 
 function Painel() {
     const [modal, setModal ] = useState(false) //bollean
@@ -8,6 +8,9 @@ function Painel() {
     const [logged, setLogged ] = useState({})
     const [isEdit, setIsEdit] = useState (false)
     const [index, setIndex] = useState(-1)
+
+    const {spiner, setSpiner} = useState(false)
+    const {msg, setMsg} = useState('')
 
     useEffect(()=>{
         const usersTemp = JSON.parse(localStorage.getItem('users'))
@@ -32,23 +35,22 @@ function Painel() {
 
 
 
-    function hanleRegister(){
-        let newUsers
-        if(index != -1){
-            newUsers = [...users]
-            newUsers[index] = user;
-            
-        }else{
-            newUsers = [...users, user]
+    async function hanleRegister(){
+       setTrue
+       
+    
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: user.email,
+            password: user.email
+        });
+
+        if(authError){
+            setMsg(authError)
+            setSpiner(false)
+            return;
         }
-        
-        setUsers(newUsers)
-        localStorage.setItem('users', JSON.stringify(newUsers))
-        setUser({})
-        setModal(false)
 
-
-
+        setSpiner(false)
     }
     return (
  <>
@@ -74,7 +76,8 @@ function Painel() {
                 <br />
                 {index != -1 && (<a onClick={()=> setIsEdit(false)} className="w-full hover:bg-dark hover:text-primary text-black rounded ml-auto py-2 shadow 3px bottom-0 cursor-pointer mx-auto bg-red-500">Cancelar</a>)}
                 <br />
-                <a onClick={hanleRegister} className="w-full bg-blue-500 hover:bg-dark text-black hover:text-primary rounded ml-auto py-2 shadow 3px bottom-0 cursor-pointer mx-auto bg-dark">Salvar</a>
+                <a onClick={hanleRegister} className="w-full bg-blue-500 hover:bg-dark text-black hover:text-primary rounded ml-auto py-2 shadow 3px bottom-0 cursor-pointer mx-auto bg-dark">{spiner? '...':'Salvar'}</a>
+                {msg}
             </form>): //else 
             (
                 <>
