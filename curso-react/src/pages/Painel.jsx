@@ -36,9 +36,9 @@ function Painel() {
 
 
     async function hanleRegister(){
-       setTrue
        
-    
+       
+    setSpiner(true)
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email: user.email,
             password: user.email
