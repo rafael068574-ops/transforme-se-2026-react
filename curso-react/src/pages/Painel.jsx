@@ -9,8 +9,8 @@ function Painel() {
     const [isEdit, setIsEdit] = useState (false)
     const [index, setIndex] = useState(-1)
 
-    const {spiner, setSpiner} = useState(false)
-    const {msg, setMsg} = useState('')
+    const {spiner, setRoda} = useState(false);
+    const {msg, setMsg} = useState('');
 
     useEffect(()=>{
         const usersTemp = JSON.parse(localStorage.getItem('users'))
@@ -36,21 +36,41 @@ function Painel() {
 
 
     async function hanleRegister(){
-       
-       
-    setSpiner(true)
+        setRoda(true)
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email: user.email,
             password: user.email
         });
 
         if(authError){
-            setMsg(authError)
-            setSpiner(false)
+            //console.log(authError)
+            setMsg(authError.message)
+            setRoda(false)
             return;
         }
 
-        setSpiner(false)
+        if(!authData){
+            setMsg("Não foi possível cadastrar, verifique a internet")
+            setRoda(false)
+            return;
+        }
+
+        const {data: LoginData, error: loginError} = await supabase.auth.singInWithPassword({
+                email: user.email,
+                password: user.senha
+        });
+        
+        const { error:profileError } = await supabase.from('profiles').insert({
+            user_id: LoginData.user.id,
+            full_name: user.nome,
+            birth: user.nascimento,
+            cpf: user.cpf
+        })
+
+        if(profileError.message)
+            setMsg(profileError.message)
+            setRoda(false)
+            return;
     }
     return (
  <>
@@ -73,7 +93,8 @@ function Painel() {
                 Email: <input class="text-black" value={user.email} onChange={ (e) => setUser({...user, email: e.target.value }) } type="email" placeholder="Digite o seu melhor email" />
                 Senha: <input class="text-black" value={user.password} onChange={ (e) => setUser({...user, password: e.target.value }) } type="password" placeholder="Letra maiuscula e números" />
                 Data de Nascimento: <input class="text-black" value={user.date} onChange={ (e) => setUser({...user, date: e.target.value }) } type="date"/>
-                <br />
+                Cpf: <input value={user.cpf} onChange={ (e) => setUser({...user,cpf: e.target.value}) } type="cpf" placeholder="Digite seu cpf" />
+                <br/>
                 {index != -1 && (<a onClick={()=> setIsEdit(false)} className="w-full hover:bg-dark hover:text-primary text-black rounded ml-auto py-2 shadow 3px bottom-0 cursor-pointer mx-auto bg-red-500">Cancelar</a>)}
                 <br />
                 <a onClick={hanleRegister} className="w-full bg-blue-500 hover:bg-dark text-black hover:text-primary rounded ml-auto py-2 shadow 3px bottom-0 cursor-pointer mx-auto bg-dark">{spiner? '...':'Salvar'}</a>
