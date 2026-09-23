@@ -9,13 +9,30 @@ function Painel() {
     const [isEdit, setIsEdit] = useState (false)
     const [index, setIndex] = useState(-1)
 
-    const {spiner, setRoda} = useState(false);
-    const {msg, setMsg} = useState('');
+    const [spiner, setRoda] = useState(false);
+    const [msg, setMsg] = useState('');
 
     useEffect(()=>{
         const usersTemp = JSON.parse(localStorage.getItem('users'))
         if(usersTemp) setUsers (usersTemp)
     },[])
+
+    useEffect(()=>{
+        loadUser()
+    },[]);
+
+    //READ - LER
+    async function loadUser(){
+        const {data, error} = await supabase.from('profiles').select('*')
+        if(error){
+            setMsg(error.message)
+            return;
+        }
+        if(data)
+            setUsers(data)
+        else
+            setUsers([])
+    }
     
     function deleteUser(index){
         const newUsers = users.filter((u,i) => {return i != index})
@@ -33,13 +50,11 @@ function Painel() {
         setIndex(indice)
     }
 
-
-
     async function hanleRegister(){
         setRoda(true)
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email: user.email,
-            password: user.email
+            password: user.password
         });
 
         if(authError){
@@ -55,22 +70,33 @@ function Painel() {
             return;
         }
 
-        const {data: LoginData, error: loginError} = await supabase.auth.singInWithPassword({
+        const {data: LoginData, error: loginError} = await supabase.auth.signInWithPassword({
                 email: user.email,
-                password: user.senha
+                password: user.password
         });
+
+        if(loginError){
+            setMsg(loginError.message)
+            setRoda(false)
+            return;
+        }
         
         const { error:profileError } = await supabase.from('profiles').insert({
             user_id: LoginData.user.id,
             full_name: user.nome,
-            birth: user.nascimento,
+            birth: user.date || user.nascimento,
             cpf: user.cpf
         })
 
-        if(profileError.message)
+        if(profileError){
             setMsg(profileError.message)
             setRoda(false)
             return;
+        }
+
+        setRoda(false);
+        setModal(false);
+        loadUser();
     }
     return (
  <>
@@ -123,8 +149,8 @@ function Painel() {
         <tbody className="font-secondary">
             {users.map( (u,i) => (
                 <tr>
-                    <td>{u.nome}</td>
-                    <td>{u.email}</td>
+                    <td>{u.name}</td>
+                    <td>{u.cpf}</td>
                     <td>
                         <a className='cursor-pointer
                         px-2
