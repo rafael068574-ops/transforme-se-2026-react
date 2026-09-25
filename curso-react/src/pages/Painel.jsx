@@ -34,20 +34,56 @@ function Painel() {
             setUsers([])
     }
     
-    function deleteUser(index){
-        const newUsers = users.filter((u,i) => {return i != index})
-        setUsers(newUsers)
-        localStorage.setItem('users', JSON.stringify(newUsers));
+    async function editUser (){
+        
+        const { error: profilerror } = await supabase
+            .from('profiles')
+            .update(user)
+            .eq('id', index)
+            .select()
+
+    
+        if(error){
+            setMsg(error.message)
+            setSpiner(false)
+            return;
+        }
+    
+        setMsg("Usuario editado")
+        setSpiner(false)
+        loadUser()
+          
+    }
+
+
+    async function deleteUser(index){
+        
+    const { error } = await supabase
+        .from('profiles')
+        .delete(user)
+        .eq('some_column', 'someValue')
+
+        if(error){
+            setMsg(error.message)
+            setSpiner(false)
+            return;
+        }
+    
+        setMsg("Usuario editado")
+        setSpiner(false)
+        loadUser()
+          
+          
     
 
 }
 
 
 
-    function updateUser(indice){
+    function updateUser(user){
         setModal(true)
-        setUser(users[indice] )
-        setIndex(indice)
+        setUser(user)
+        setIndex(user.id)
     }
 
     async function hanleRegister(){
@@ -83,8 +119,8 @@ function Painel() {
         
         const { error:profileError } = await supabase.from('profiles').insert({
             user_id: LoginData.user.id,
-            full_name: user.nome,
-            birth: user.date || user.nascimento,
+            name: user.name,
+            birth_date: user.date || user.nascimento,
             cpf: user.cpf
         })
 
@@ -94,13 +130,12 @@ function Painel() {
             return;
         }
 
-        setRoda(false);
         setModal(false);
-        loadUser();
+        setMsg("Usuario cadastrado com sucesso")
     }
     return (
  <>
-    <h3>Bem vindo,{logged?.nome}</h3>
+    <h3>Bem vindo,{logged?.name}</h3>
 
 { modal && (
     <div
@@ -115,22 +150,33 @@ function Painel() {
             { isEdit ? (
             <form className="flex flex-col">
 
-                Nome: <input class="text-black" value={user.nome} onChange={ (e) => setUser({...user, nome: e.target.value }) } type="text" placeholder="Digite seu nome completo" />
-                Email: <input class="text-black" value={user.email} onChange={ (e) => setUser({...user, email: e.target.value }) } type="email" placeholder="Digite o seu melhor email" />
-                Senha: <input class="text-black" value={user.password} onChange={ (e) => setUser({...user, password: e.target.value }) } type="password" placeholder="Letra maiuscula e números" />
-                Data de Nascimento: <input class="text-black" value={user.date} onChange={ (e) => setUser({...user, date: e.target.value }) } type="date"/>
+                name: <input className="text-white" value={user.name} onChange={ (e) => setUser({...user, name: e.target.value }) } type="text" placeholder="Digite seu name completo" />
+                {index == -1 && (
+                    <>
+                Email: <input className="text-white" value={user.email} onChange={ (e) => setUser({...user, email: e.target.value }) } type="email" placeholder="Digite o seu melhor email" />
+                Senha: <input className="text-white" value={user.password} onChange={ (e) => setUser({...user, password: e.target.value }) } type="password" placeholder="Letra maiuscula e números" />
+                </>
+                )}
+                Data de Nascimento: <input class="text-white" value={user.date} onChange={ (e) => setUser({...user, date: e.target.value }) } type="date"/>
                 Cpf: <input value={user.cpf} onChange={ (e) => setUser({...user,cpf: e.target.value}) } type="cpf" placeholder="Digite seu cpf" />
                 <br/>
                 {index != -1 && (<a onClick={()=> setIsEdit(false)} className="w-full hover:bg-dark hover:text-primary text-black rounded ml-auto py-2 shadow 3px bottom-0 cursor-pointer mx-auto bg-red-500">Cancelar</a>)}
                 <br />
-                <a onClick={hanleRegister} className="w-full bg-blue-500 hover:bg-dark text-black hover:text-primary rounded ml-auto py-2 shadow 3px bottom-0 cursor-pointer mx-auto bg-dark">{spiner? '...':'Salvar'}</a>
+                <a onClick={
+                    () => {
+                        if(index == -1)
+                            hanleRegister()
+                        else
+                            editUser()
+                    }
+                } 
+                className="w-full bg-blue-500 hover:bg-dark text-black hover:text-primary rounded ml-auto py-2 shadow 3px bottom-0 cursor-pointer mx-auto bg-dark">{spiner? '...':'Salvar'}</a>
                 {msg}
             </form>): //else 
             (
                 <>
-                    <p>Nome: {user.nome}</p>
-                    <p>Email: {user.email}</p>
-                    <p>Date: {user.date}</p>
+                    <p>name: {user.name}</p>
+                    <p>Cpf: {user.cpf}</p>
                     <br />
                     <a onClick={()=> setIsEdit(true)} className="w-full hover:bg-dark hover:text-primary text-black rounded ml-auto py-2 shadow 3px bottom-0 cursor-pointer mx-auto bg-dark bg-yellow">Editar</a>
                 </>
@@ -141,14 +187,14 @@ function Painel() {
 )}
     <table>
         <thead>
-            <th>Nome</th>
+            <th>name</th>
             <th>Email</th>
             <th>Ações</th>
         </thead>
 
         <tbody className="font-secondary">
-            {users.map( (u,i) => (
-                <tr>
+            {users.map( (u) => (
+                <tr key={u.id}>
                     <td>{u.name}</td>
                     <td>{u.cpf}</td>
                     <td>
@@ -160,7 +206,7 @@ function Painel() {
                         text-white
                         rounded-full
                         bg-green-500'
-                    onClick={()=> updateUser(i)}
+                    onClick={()=> updateUser(u)}
                         >V</a>
                         <a className='cursor-pointer
                         px-2
@@ -170,7 +216,7 @@ function Painel() {
                         text-white
                         rounded-full
                         bg-red-500'
-                        onClick={()=> deleteUser(i)}
+                        onClick={()=> deleteUser(u)}
                         >X</a>
                     </td>
                 </tr>
